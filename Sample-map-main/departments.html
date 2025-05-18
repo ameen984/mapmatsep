@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="departments-page">
+        <div class="departments-header">
+            <h1>Department Details</h1>
+            <button class="back-button" onclick="window.history.back()">← Back to Map</button>
+        </div>
+        <div id="departmentsContent" class="departments-content">
+            <!-- Department cards will be loaded here -->
+        </div>
+        <div id="facilityListPanel" class="facility-list-panel" style="display:none;">
+            <h3>Buildings with Facility</h3>
+            <ul id="facilityBuildingList"></ul>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://xxwqvakpzijmwrmicbgs.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4d3F2YWtwemlqbXdybWljYmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzNDAxMTksImV4cCI6MjA2MDkxNjExOX0.InPR-ZWlP4tP48Da7VBBSLTTr6uTvuZdjzlMETBrAQA';
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    <script src="departments.js"></script>
+</body>
+</html> 

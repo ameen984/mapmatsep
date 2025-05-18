@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0;
+        }
+        .contact-container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(44, 62, 80, 0.13);
+            padding: 44px 32px 32px 32px;
+            text-align: center;
+            max-width: 420px;
+            border: 3px solid;
+            border-image: linear-gradient(135deg, #1976d2 40%, #43a047 100%) 1;
+            animation: fadeInUp 1s cubic-bezier(.23,1.01,.32,1) both;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .contact-title {
+            font-size: 2.1em;
+            color: #1976d2;
+            margin-bottom: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .contact-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .contact-list li {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 22px;
+            background: #f8fafd;
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.04);
+            transition: box-shadow 0.2s, background 0.2s;
+        }
+        .contact-list li:hover {
+            background: #e3f2fd;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.10);
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1976d2 60%, #43a047 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+            flex-shrink: 0;
+            letter-spacing: 1px;
+        }
+        .contact-info {
+            text-align: left;
+        }
+        .contact-name {
+            font-weight: 600;
+            color: #388e3c;
+            font-size: 1.13em;
+        }
+        .contact-number {
+            color: #1976d2;
+            font-weight: 500;
+            font-size: 1.05em;
+            margin-top: 2px;
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .contact-container {
+                padding: 18px 6px 12px 6px;
+                max-width: 98vw;
+            }
+            .contact-list li {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px 10px;
+            }
+            .avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1em;
+            }
+        }
+        .back-menu-btn {
+            margin-top: 18px;
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 1.08em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-menu-btn:hover, .back-menu-btn:focus {
+            background: #1565c0;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
+            transform: translateY(-2px) scale(1.03);
+            outline: 2px solid #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-container">
+        <div class="contact-title">Contact Members</div>
+        <ul class="contact-list">
+            <li>
+                <div class="avatar">AY</div>
+                <div class="contact-info">
+                    <span class="contact-name">Aathil Y</span>
+                    <span class="contact-number">+91 97465 82735</span>
+                </div>
+            </li>
+            <li>
+                <div class="avatar">AS</div>
+                <div class="contact-info">
+                    <span class="contact-name">Abhijith A S</span>
+                    <span class="contact-number">+91 73067 44127</span>
+                </div>
+            </li>
+            <li>
+                <div class="avatar">AN</div>
+                <div class="contact-info">
+                    <span class="contact-name">Ajmal N S</span>
+                    <span class="contact-number">+91 79023 71277</span>
+                </div>
+            </li>
+            <li>
+                <div class="avatar">AA</div>
+                <div class="contact-info">
+                    <span class="contact-name">Al Ameen S</span>
+                    <span class="contact-number">+91 98478 41597</span>
+                </div>
+            </li>
+        </ul>
+        <button class="back-menu-btn" onclick="window.location.href='landing.html'" aria-label="Back to Menu">
+            <i class="fa fa-arrow-left"></i> Back to Menu
+        </button>
+    </div>
+</body>
+</html> 

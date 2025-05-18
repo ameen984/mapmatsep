@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Campus Map Viewer</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/167/167707.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+    <button id="backToMenuBtn" class="back-menu-btn" onclick="window.location.href='landing.html'" aria-label="Back to Menu" style="position:fixed;bottom:28px;left:28px;z-index:2000;padding:16px 32px;font-size:1.15em;border-radius:14px;background:linear-gradient(135deg,#2979ff 60%,#23232b 100%);color:#fff;box-shadow:0 4px 16px rgba(41,121,255,0.13);font-weight:700;display:inline-flex;align-items:center;gap:10px;transition:background 0.2s,box-shadow 0.2s,transform 0.2s;">
+        <i class="fa fa-arrow-left"></i> Back
+    </button>
+    <style>
+        #backToMenuBtn:hover, #backToMenuBtn:focus {
+            background: #f2f4f8;
+            color: #5d84c2;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.18);
+            transform: translateY(-2px) scale(1.03);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f2f4f8 0%, #e8eef7 100%);
+            color: #5d6b88;
+        }
+        #container {
+            background: none !important;
+        }
+        #infoSidebar {
+            position: fixed;
+            right: 32px;
+            top: 80px;
+            width: 290px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(93, 132, 194, 0.15);
+            padding: 18px 14px;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(93, 132, 194, 0.08);
+            color: #34495e;
+            font-size: 0.97em;
+        }
+        #controls {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1100;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(93, 132, 194, 0.15);
+            padding: 10px 7px;
+            backdrop-filter: blur(8px);
+        }
+        .control-button {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #f2f4f8 60%, #5d84c2 100%);
+            color: #5d84c2;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(93, 132, 194, 0.12);
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+        }
+        .control-button:hover, .control-button:focus {
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.25);
+            transform: translateY(-2px) scale(1.03);
+        }
+        #compass {
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%);
+            color: #fff;
+        }
+        #tooltip {
+            position: absolute;
+            background: rgba(245, 248, 255, 0.98);
+            color: #34495e;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 1em;
+            display: none;
+            pointer-events: none;
+            z-index: 1200;
+            max-width: 320px;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.15);
+            backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(93, 132, 194, 0.12);
+        }
+        #tooltip strong {
+            color: #2979ff;
+            font-size: 1.05em;
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        #tooltip br {
+            content: '';
+            display: block;
+            margin: 4px 0;
+        }
+        #tooltip small {
+            color: #5d6b88;
+            font-size: 0.95em;
+            opacity: 0.9;
+            display: block;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(242, 244, 248, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .loading-spinner {
+            border: 6px solid #e8eef7;
+            border-top: 6px solid #5d84c2;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+        #navigationPanel {
+            position: fixed;
+            left: 32px;
+            top: 32px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 14px 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(93, 132, 194, 0.15);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(93, 132, 194, 0.08);
+            color: #5d6b88;
+            font-size: 0.97em;
+        }
+        #navigationPanel h3 {
+            margin-top: 0;
+            margin-bottom: 7px;
+            color: #5d84c2;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        #navigationPanel button {
+            width: 100%;
+            margin-bottom: 7px;
+            padding: 7px;
+            border-radius: 7px;
+            font-size: 0.97em;
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(93, 132, 194, 0.10);
+            cursor: pointer;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+        }
+        #navigationPanel button:hover {
+            background: linear-gradient(135deg, #f2f4f8 60%, #5d84c2 100%);
+            color: #5d84c2;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.13);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .search-bar-wrapper {
+            position: relative;
+            margin-bottom: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .search-bar {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 8px 12px 8px 32px;
+            border-radius: 18px;
+            border: 1.5px solid #b8c6e3;
+            font-size: 0.97em;
+            background: rgba(255, 255, 255, 0.92);
+            color: #5d6b88;
+            box-shadow: 0 2px 8px rgba(93, 132, 194, 0.08);
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .search-bar:focus {
+            border: 1.5px solid #5d84c2;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.13);
+            background: #ffffff;
+            color: #5d6b88;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5d84c2;
+            font-size: 1.1em;
+            pointer-events: none;
+        }
+        .search-label {
+            font-size: 0.93em;
+            color: #5d84c2;
+            font-weight: 600;
+            margin-bottom: 2px;
+            margin-left: 4px;
+            display: block;
+        }
+        .facility-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 10px auto 0 auto;
+            box-shadow: 0 2px 8px rgba(93, 132, 194, 0.10);
+            cursor: pointer;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+            outline: none;
+            width: 90%;
+            justify-content: center;
+        }
+        .facility-btn i {
+            font-size: 1.2em;
+        }
+        .facility-btn:hover, .facility-btn:focus {
+            background: linear-gradient(135deg, #f2f4f8 60%, #5d84c2 100%);
+            color: #5d84c2;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.13);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .facility-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(242, 244, 248, 0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        .facility-modal-content {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 18px 10px 14px 10px;
+            border-radius: 12px;
+            max-width: 300px;
+            width: 95vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(93, 132, 194, 0.15);
+            animation: fadeInUp 0.4s cubic-bezier(.23,1.01,.32,1) both;
+            border: 1.5px solid rgba(93, 132, 194, 0.08);
+            color: #5d6b88;
+        }
+        .facility-modal-content h3 {
+            margin-top: 0;
+            color: #5d84c2;
+            font-size: 1.08em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .facility-modal-close {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #b8c6e3;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .facility-modal-close:hover {
+            color: #5d84c2;
+        }
+        .facility-type-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 18px;
+            align-items: stretch;
+        }
+        @media (max-width: 600px) {
+            .facility-type-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        .facility-type-list li {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 7px;
+            padding: 10px 10px;
+            box-shadow: 0 2px 8px rgba(93, 132, 194, 0.08);
+            border-left: 5px solid #5d84c2;
+            color: #5d84c2;
+            font-size: 0.97em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .facility-type-list li:hover {
+            background: #f2f4f8;
+            color: #5d84c2;
+            box-shadow: 0 4px 12px rgba(93, 132, 194, 0.13);
+        }
+        /* Adjust Clear Facilities button for pale theme */
+        #clearFacilitiesBtn {
+            background: linear-gradient(135deg, #f2f4f8 60%, #5d84c2 100%) !important;
+            color: #5d84c2 !important;
+            border: none !important;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.15) !important;
+            padding: 8px 16px !important;
+            font-size: 0.97em !important;
+            border-radius: 8px !important;
+        }
+        #clearFacilitiesBtn:hover {
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%) !important;
+            color: #ffffff !important;
+        }
+        /* Toggle Graph, Save Alignment, and Back button styles */
+        .graph-control-button, #backToMenuBtn {
+            background: linear-gradient(135deg, #5d84c2 60%, #f2f4f8 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 16px rgba(93, 132, 194, 0.13) !important;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.18s !important;
+            padding: 8px 18px !important;
+            font-size: 0.97em !important;
+        }
+        .graph-control-button:hover, #backToMenuBtn:hover {
+            background: linear-gradient(135deg, #f2f4f8 60%, #5d84c2 100%) !important;
+            color: #5d84c2 !important;
+            box-shadow: 0 8px 24px rgba(93, 132, 194, 0.18) !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+        #infoSidebar h2 {
+            color: #5d84c2;
+            font-size: 1.4em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-top: 0;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 8px rgba(93, 132, 194, 0.10);
+        }
+        .info-section h3 {
+            color: #5d6b88;
+            font-weight: 700;
+            text-shadow: none;
+        }
+        .info-section p {
+            color: #5d6b88;
+        }
+        .department-modal-content h2 {
+            color: #5d84c2;
+            text-shadow: none;
+        }
+        .department-card {
+            background: #f2f4f8;
+            border-radius: 8px;
+            padding: 12px 8px;
+            box-shadow: 0 2px 12px rgba(93, 132, 194, 0.07);
+            border-left: 5px solid #5d84c2;
+            margin-bottom: 0;
+            opacity: 1;
+            font-size: 0.97em;
+        }
+        .department-card strong, .department-name {
+            color: #5d84c2;
+            font-size: 1.05em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: none;
+        }
+        .department-card span, .department-card br, .department-card .dept-label, .department-card .dept-value {
+            color: #34495e !important;
+            font-size: 0.97em;
+            font-weight: 600;
+            opacity: 1 !important;
+        }
+        .department-card .dept-label {
+            color: #2979ff !important;
+            font-weight: 700;
+            opacity: 1 !important;
+        }
+        .department-card .dept-value {
+            color: #34495e !important;
+            font-weight: 700;
+            opacity: 1 !important;
+        }
+        .detail-label {
+            color: #5d84c2;
+            font-weight: 700;
+            font-size: 1.05em;
+            letter-spacing: 0.2px;
+        }
+        .detail-value {
+            color: #5d6b88;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        #navigationPanel.collapsed {
+            height: auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+        #navigationPanel .find-path-header {
+            user-select: none;
+        }
+        #navigationPanel.expanded #findPathContent {
+            display: block !important;
+        }
+        #navigationPanel.collapsed #findPathContent {
+            display: none !important;
+        }
+        #navigationPanel .find-path-header span {
+            transition: transform 0.2s;
+        }
+        #navigationPanel.expanded .find-path-header span {
+            transform: rotate(180deg);
+        }
+        /* Add nice transitions */
+        #infoSidebar, #navigationPanel, .facility-btn, .search-bar, .control-button, #backToMenuBtn, .graph-control-button {
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Update welcome message styling for better contrast */
+        .sidebar-welcome {
+            text-align: center;
+            color: #2979ff !important;
+            font-size: 1.1em;
+            padding: 24px 0 10px 0;
+        }
+
+        .sidebar-welcome i {
+            font-size: 1.7em;
+            display: block;
+            margin-bottom: 8px;
+            color: #2979ff;
+        }
+
+        .sidebar-welcome div:first-of-type {
+            font-weight: 600;
+            font-size: 1.15em;
+            margin-bottom: 4px;
+            color: #2979ff;
+        }
+
+        .sidebar-welcome div:last-of-type {
+            color: #34495e !important;
+            font-size: 1em;
+        }
+
+        /* Sidebar back button styling */
+        .sidebar-back-btn {
+            margin-bottom: 18px;
+            padding: 7px 18px;
+            font-size: 1em;
+            border-radius: 7px;
+            background: #2979ff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            float: right;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .sidebar-back-btn:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+    </style>
+    <div id="container"></div>
+    <div id="controls">
+        <button id="tiltButton" class="control-button" title="Tilt View"><i class="fa fa-arrows-alt-v"></i></button>
+        <div class="zoom-controls">
+            <button id="zoomIn" class="control-button" title="Zoom In"><i class="fa fa-plus"></i></button>
+            <button id="zoomOut" class="control-button" title="Zoom Out"><i class="fa fa-minus"></i></button>
+        </div>
+        <div id="compass" class="control-button" title="Compass">⇡</div>
+    </div>
+    <div id="tooltip"></div>
+    <div id="infoSidebar" class="info-sidebar">
+        <div class="sidebar-welcome">
+            <i class='fa fa-info-circle'></i>
+            <div>Welcome!</div>
+            <div>Please select a building to view its details.</div>
+        </div>
+        <button id="facilitiesBtn" class="facility-btn"><i class="fa fa-building"></i> Facilities</button>
+    </div>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    <div id="navigationPanel">
+        <h3 style="margin: 0;">Find Path</h3>
+        <div id="findPathContent">
+            <label for="startBuildingInput" class="search-label">Starting Point</label>
+            <div class="search-bar-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input id="startBuildingInput" list="startBuildingList" placeholder="Search for starting building..." autocomplete="off" class="search-bar">
+            </div>
+            <label for="endBuildingInput" class="search-label">Destination</label>
+            <div class="search-bar-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input id="endBuildingInput" list="endBuildingList" placeholder="Search for destination..." autocomplete="off" class="search-bar">
+            </div>
+            <datalist id="startBuildingList"></datalist>
+            <datalist id="endBuildingList"></datalist>
+            <button id="findPathButton">Find Path</button>
+            <button id="clearPathButton">Clear Path</button>
+        </div>
+    </div>
+
+    <!-- Updated script imports for GLB support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
+    <script src="astar.js"></script>
+    <script src="touchControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script src="app.js"></script>
+    <!-- Added GPS tracker and navigation system integration -->
+    <script src="gpsTracker.js"></script>
+    <script src="navigationSystem.js"></script>
+
+    <!-- Department Modal -->
+    <div id="departmentModal" class="department-modal">
+        <div class="department-modal-content">
+            <button class="department-modal-close">&times;</button>
+            <h2>Department Details</h2>
+            <div id="departmentModalContent" class="department-list"></div>
+        </div>
+    </div>
+
+    <!-- Facility Modal -->
+    <div id="facilitiesModal" class="facility-modal">
+        <div class="facility-modal-content">
+            <button class="facility-modal-close">&times;</button>
+            <h3>Select a Facility</h3>
+            <ul id="facilityTypeList" class="facility-type-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Open the facility modal and populate it
+        document.getElementById('facilitiesBtn').onclick = function() {
+            const list = document.getElementById('facilityTypeList');
+            list.innerHTML = '';
+            (window.facilityTypes || []).forEach(type => {
+                const li = document.createElement('li');
+                li.textContent = type;
+                li.onclick = () => {
+                    showFacilitiesOnMap(type);
+                    closeFacilitiesModal();
+                };
+                list.appendChild(li);
+            });
+            document.getElementById('facilitiesModal').style.display = 'block';
+        };
+
+        // Close the facility modal
+        function closeFacilitiesModal() {
+            document.getElementById('facilitiesModal').style.display = 'none';
+        }
+        document.querySelector('.facility-modal-close').onclick = closeFacilitiesModal;
+        document.getElementById('facilitiesModal').onclick = function(e) {
+            if (e.target === this) closeFacilitiesModal();
+        };
+
+        // Fetch facilities by type from Supabase
+        async function fetchFacilitiesByType(type) {
+            const { data, error } = await supabase
+                .from('facilities')
+                .select('id, building_id, type, location, note')
+                .eq('type', type);
+
+            if (error) {
+                console.error('Error fetching facilities:', error);
+                return [];
+            }
+            return data;
+        }
+
+        // Store facility markers for removal
+        let facilityMarkers = [];
+
+        function removeFacilityMarkers() {
+            facilityMarkers.forEach(marker => {
+                scene.remove(marker);
+            });
+            facilityMarkers = [];
+        }
+
+        // Google Maps-style red pin marker
+        function addFacilityMarkerToBuilding(buildingId, facilityType) {
+            // Find the building object in the 3D scene by building_id
+            let buildingObj = null;
+            model.traverse(obj => {
+                if (obj.userData && obj.userData.buildingData && obj.userData.buildingData.id === buildingId) {
+                    buildingObj = obj;
+                }
+            });
+            if (!buildingObj) {
+                console.log('No building found for facility:', buildingId);
+                return;
+            }
+
+            // Get building position (center)
+            const bbox = new THREE.Box3().setFromObject(buildingObj);
+            const center = bbox.getCenter(new THREE.Vector3());
+
+            // Create a Google Maps-style red map pin
+            const markerGroup = new THREE.Group();
+
+            // Pin head (cone)
+            const pinHeadGeo = new THREE.ConeGeometry(8, 16, 32);
+            const pinHeadMat = new THREE.MeshPhongMaterial({
+                color: 0xff1744,
+                shininess: 100,
+                specular: 0x444444
+            });
+            const pinHead = new THREE.Mesh(pinHeadGeo, pinHeadMat);
+            pinHead.rotation.x = Math.PI; // Point down
+            pinHead.position.y = 8;
+
+            // Pin base (sphere)
+            const pinBaseGeo = new THREE.SphereGeometry(4, 32, 32);
+            const pinBaseMat = new THREE.MeshPhongMaterial({
+                color: 0xff1744,
+                shininess: 100,
+                specular: 0x444444
+            });
+            const pinBase = new THREE.Mesh(pinBaseGeo, pinBaseMat);
+
+            markerGroup.add(pinHead);
+            markerGroup.add(pinBase);
+
+            // Position above building
+            markerGroup.position.copy(center);
+            markerGroup.position.y += 40;
+
+            scene.add(markerGroup);
+            facilityMarkers.push(markerGroup);
+        }
+
+        // Show only markers for selected facility type
+        async function showFacilitiesOnMap(type) {
+            const facilities = await fetchFacilitiesByType(type);
+            removeFacilityMarkers();
+
+            for (const facility of facilities) {
+                addFacilityMarkerToBuilding(facility.building_id, facility.type);
+            }
+        }
+    </script>
+</body>
+</html>

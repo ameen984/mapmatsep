@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Map Portal</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/167/167707.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #e3f2fd 0%, #bbdefb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .landing-container {
+            background: rgba(255,255,255,0.85);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+            padding: 0 0 36px 0;
+            text-align: center;
+            max-width: 900px;
+            width: 90vw;
+            margin: 32px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .landing-banner {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            object-position: center top;
+            background: #1976d2;
+            display: block;
+        }
+        .landing-logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid #fff;
+            background: #fff;
+        }
+        .landing-content {
+            margin-top: 70px;
+            padding: 0 48px;
+        }
+        .landing-container h1 {
+            font-size: 2.6em;
+            color: #1976d2;
+            margin-bottom: 8px;
+            margin-top: 18px;
+        }
+        .landing-tagline {
+            color: #388e3c;
+            font-size: 1.25em;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .landing-quote {
+            color: #1976d2;
+            font-style: italic;
+            margin-bottom: 18px;
+            font-size: 1.1em;
+        }
+        .landing-container p {
+            color: #34495e;
+            font-size: 1.13em;
+            margin-bottom: 32px;
+        }
+        .view-map-btn {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 18px 48px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+            margin-bottom: 24px;
+            margin-top: 8px;
+            animation: pulse 1.5s infinite 2s;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.3);}
+            70% { box-shadow: 0 0 0 16px rgba(25, 118, 210, 0);}
+            100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0);}
+        }
+        .view-map-btn:hover, .view-map-btn:focus {
+            background: #1565c0;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
+            transform: translateY(-2px) scale(1.03);
+            outline: 2px solid #1976d2;
+        }
+        .quick-links {
+            margin: 24px 0 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+        .quick-links a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quick-links a:hover, .quick-links a:focus {
+            color: #388e3c;
+            outline: none;
+        }
+        .social-icons {
+            margin: 18px 0 0 0;
+        }
+        .social-icons a {
+            color: #1976d2;
+            margin: 0 12px;
+            font-size: 1.5em;
+            transition: color 0.2s;
+        }
+        .social-icons a:hover, .social-icons a:focus {
+            color: #388e3c;
+            outline: none;
+        }
+        .landing-footer {
+            margin-top: 32px;
+            color: #888;
+            font-size: 1.05em;
+        }
+        .loader-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255,255,255,0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .loader {
+            border: 6px solid #e3f2fd;
+            border-top: 6px solid #1976d2;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 900px) {
+            .landing-container {
+                max-width: 99vw;
+                width: 99vw;
+                padding: 0 0 24px 0;
+            }
+            .landing-content {
+                padding: 0 10vw;
+            }
+        }
+        @media (max-width: 600px) {
+            .landing-container {
+                padding: 0 0 12px 0;
+            }
+            .landing-content {
+                padding: 0 8px;
+            }
+            .landing-logo {
+                width: 60px;
+                height: 60px;
+                top: 120px;
+            }
+            .landing-banner {
+                height: 120px;
+                object-position: center top;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <img class="landing-banner" src="https://keralauniversity.ac.in/images/2000x700_kvtm_campus.jpg" alt="Campus Banner">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Kerala_University_Emblem.png" alt="Campus Logo" class="landing-logo" onclick="window.location.href='landing.html'" aria-label="Go to home">
+        <div class="landing-content">
+            <h1>Welcome to the Campus Map</h1>
+            <div class="landing-tagline">Your interactive guide to our beautiful campus</div>
+            <div class="landing-quote">"Where learning meets innovation."</div>
+            <p>Explore the interactive 3D map, view departments, and find your way around easily. Start your journey below!</p>
+            <button class="view-map-btn" onclick="showLoaderAndGo('index.html')" aria-label="View Map">
+                <i class="fa-solid fa-map-location-dot"></i> View Map
+            </button>
+            <div class="quick-links">
+                <a href="about.html"><i class="fa fa-info-circle"></i> About</a>
+                <a href="contact.html"><i class="fa fa-phone"></i> Contact</a>
+                <a href="departments.html"><i class="fa fa-building"></i> Departments</a>
+            </div>
+            <div class="social-icons">
+                <a href="#" title="Twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" title="Facebook" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" title="Instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+            <div class="landing-footer">
+                &copy; 2025 Karyavattom Campus. All rights reserved.
+            </div>
+        </div>
+    </div>
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="loader"></div>
+    </div>
+    <script>
+        function showLoaderAndGo(url) {
+            document.getElementById('loaderOverlay').style.display = 'flex';
+            setTimeout(function() {
+                window.location.href = url;
+            }, 600);
+        }
+    </script>
+</body>
+</html>  
